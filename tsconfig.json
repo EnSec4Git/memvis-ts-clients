@@ -3,7 +3,14 @@
         "module": "commonjs",
         "target": "esnext",
         "declaration": true,
-        "outDir": "./dist"
+        "esModuleInterop": true,
+        "outDir": "./dist",
+        "typeRoots": [
+            "node_modules/@types"
+        ],
+        "types": [
+            "node"
+        ]
     },
     "include": [
         "src/**/*"
