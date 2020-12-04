@@ -15,7 +15,7 @@ export function PtrArray(n): PtrArrayTypes {
       r1f = ((x, o) => x.readUInt32LE(o));
       break;
     case 8:
-      res = BigUint64Array; // eslint-disable-line
+      res = BigUint64Array;
       r1f = ((x, o) => x.readBigUInt64LE(o));
       break;
     default:

@@ -5,7 +5,7 @@ import MVClient from './client';
 import { MapState, RawMaps } from './mapstate';
 import { IpcMain } from 'electron';
 
-export class TCPMVClient implements MVClient {
+export default class TCPMVClient implements MVClient {
     private _client: Socket;
     host: string;
     port: number;

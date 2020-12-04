@@ -32,7 +32,7 @@ export class MapState {
     usedLogSum: number;
     maps: MapRow[];
 
-    constructor($ptrSize) {
+    constructor($ptrSize: number) {
         this.ptrSize = $ptrSize;
     }
 

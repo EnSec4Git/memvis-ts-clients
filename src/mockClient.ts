@@ -1,8 +1,11 @@
 import MVClient from "./client";
 import { MapRow, MapState } from "./mapstate";
 
-export class MockMVClient implements MVClient {
+export default class MockMVClient implements MVClient {
     constructor() {}
+    async getPtrSize() {
+        return 32;
+    }
     async getMaps() {
         let res = new MapState(32);
         res.maps = [new MapRow(MapRow.FREE, 0n, 256n, 32), new MapRow(MapRow.USED, 256n, 65536n, 32)];
