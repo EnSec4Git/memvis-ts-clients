@@ -2,7 +2,8 @@
   "name": "memvis-clients",
   "version": "0.0.1",
   "description": "Several implementations of MemVis clients",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
