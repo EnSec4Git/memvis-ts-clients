@@ -2,8 +2,8 @@ type _PtrArrayTypes = Uint8Array | Uint16Array | Uint32Array | BigUint64Array;
 
 export type PtrArrayTypes = _PtrArrayTypes & { readOneFromBuffer: (x: any, o: any) => _PtrArrayTypes };
 
-export function PtrArray(n): PtrArrayTypes {
-  let res;
+export function PtrArray(n: number): PtrArrayTypes {
+  let res //: _PtrArrayTypes;
   let r1f;
   switch (n) {
     case 2:

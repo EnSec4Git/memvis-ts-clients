@@ -1,4 +1,4 @@
-import { PtrArrayTypes } from "./ptrArray";
+import { PtrArrayTypes } from "./ptrTypes";
 
 export class MapRow {
     static FREE: 'FREE' = 'FREE';

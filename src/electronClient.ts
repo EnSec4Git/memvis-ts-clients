@@ -1,14 +1,16 @@
 import { IpcRenderer } from "electron";
 import MVClient from "./client";
 import { MapState } from "./mapstate";
+import MemRow from "./memRow";
 
 export type MapsEventListener = (x: MapState) => any;
 
-export default class ElectronMVClient implements MVClient {
+export default class ElectronMVClient extends MVClient {
     private renderer: IpcRenderer;
     private eventListeners: MapsEventListener[] = [];
     ptrSize?: number;
     constructor($ipcRenderer: IpcRenderer) {
+        super();
         this.renderer = $ipcRenderer;
     }
 
@@ -33,6 +35,10 @@ export default class ElectronMVClient implements MVClient {
             });
             this.renderer.send("get-maps");
         });
+    }
+
+    async _internal_memread($startAddr, $endAddr): Promise<MemRow> {
+        throw new Error('Not implemented');
     }
 
     addMapsEventListener($listener: MapsEventListener) {

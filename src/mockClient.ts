@@ -1,8 +1,11 @@
 import MVClient from "./client";
 import { MapRow, MapState } from "./mapstate";
+import MemRow from "./memRow";
 
-export default class MockMVClient implements MVClient {
-    constructor() {}
+export default class MockMVClient extends MVClient {
+    constructor() {
+        super();
+    }
     async getPtrSize() {
         return 32;
     }
@@ -12,5 +15,17 @@ export default class MockMVClient implements MVClient {
         res.freeCount = 1;
         res.usedLogSum = Math.log2(Math.max(1024, Number(65536n - 256n)));
         return res;
+    }
+    _internal_memread($startAddr: bigint, $endAddr: bigint): Promise<MemRow> {
+        let res = new MemRow($startAddr, $endAddr);
+        let len = Number($endAddr - $startAddr);
+        if (len > 8096) {
+            throw new Error('It\'s a bad idea to request this big of a row');
+        }
+        res.data = new Uint8Array(len);
+        for (let $i = $startAddr, $j=0; $i < $endAddr; $i++, $j++) {
+            res.data[$j] = Number($i % 256n)
+        }
+        return
     }
 }

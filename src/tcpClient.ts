@@ -1,11 +1,12 @@
 import { Socket } from 'net';
 import assert from 'assert';
-import { PtrArray, PtrArrayTypes } from './ptrArray';
+import { PtrArray, PtrArrayTypes } from './ptrTypes';
 import MVClient from './client';
 import { MapState, RawMaps } from './mapstate';
 import { IpcMain } from 'electron';
+import MemRow from './memRow';
 
-export default class TCPMVClient implements MVClient {
+export default class TCPMVClient extends MVClient {
     private _client: Socket;
     host: string;
     port: number;
@@ -13,7 +14,7 @@ export default class TCPMVClient implements MVClient {
     _PAC?: PtrArrayTypes;
 
     constructor($host: string, $port: number) {
-
+        super();
         this.host = $host;
         this.port = $port;
         this._client = new Socket();
@@ -82,6 +83,10 @@ export default class TCPMVClient implements MVClient {
     async getMaps() {
         let rawMaps = await this.getRawMaps();
         return MapState.fromRawMaps(rawMaps, this.ptrSize);
+    }
+
+    async _internal_memread($startAddr, $endAddr): Promise<MemRow> {
+        throw new Error('Not implemented');
     }
 
     async startElectronServer($ipcMain: IpcMain) {
