@@ -1,5 +1,6 @@
 import { MapState } from "./mapstate";
 import MemRow from './memRow';
+import { IterableWeakSet } from './iterableWeakSet';
 
 export default abstract class MVClient {
     abstract getMaps(): Promise<MapState>;
