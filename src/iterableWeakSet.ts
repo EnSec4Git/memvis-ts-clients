@@ -3,6 +3,8 @@
 // NOTE: this WeakSet implementation is incomplete, only does what I needed
 // In Firefox Nightly, visit about:config and enable javascript.options.experimental.weakrefs
 
+import { WeakRef } from './weakref-pf';
+
 export class IterableWeakSet<T extends object> extends Set<WeakRef<T>> {
     addRef(el: T) {
         return super.add(new WeakRef<T>(el));
