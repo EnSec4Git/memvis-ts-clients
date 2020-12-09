@@ -20,7 +20,7 @@ class MockMVClient extends client_1.default {
         res.usedLogSum = Math.log2(Math.max(1024, Number(65536n - 256n)));
         return res;
     }
-    _internal_memread($startAddr, $endAddr) {
+    async _internal_memread($startAddr, $endAddr) {
         let res = new memRow_1.default($startAddr, $endAddr);
         let len = Number($endAddr - $startAddr);
         if (len > 8096) {
@@ -30,7 +30,7 @@ class MockMVClient extends client_1.default {
         for (let $i = $startAddr, $j = 0; $i < $endAddr; $i++, $j++) {
             res.data[$j] = Number($i % 256n);
         }
-        return;
+        return res;
     }
 }
 exports.default = MockMVClient;
