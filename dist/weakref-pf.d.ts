@@ -1,4 +1,4 @@
-export interface WeakRef<T extends object> {
+interface WeakRef<T extends object> {
     readonly [Symbol.toStringTag]: "WeakRef";
     /**
      * Returns the WeakRef instance's target object, or undefined if the target object has been
@@ -6,7 +6,7 @@ export interface WeakRef<T extends object> {
      */
     deref(): T | undefined;
 }
-export interface WeakRefConstructor {
+interface WeakRefConstructor {
     readonly prototype: WeakRef<any>;
     /**
      * Creates a WeakRef instance for the given target object.
@@ -14,4 +14,4 @@ export interface WeakRefConstructor {
      */
     new <T extends object>(target?: T): WeakRef<T>;
 }
-export declare var WeakRef: WeakRefConstructor;
+declare var WeakRef: WeakRefConstructor;

@@ -3,7 +3,7 @@
 // This is just temporary until TypeScript updates ESNext target type definitions
 // See here for updates on the fix: https://github.com/microsoft/TypeScript/issues/32393
 
-export interface WeakRef<T extends object> {
+interface WeakRef<T extends object> {
     readonly [Symbol.toStringTag]: "WeakRef";
 
     /**
@@ -13,7 +13,7 @@ export interface WeakRef<T extends object> {
     deref(): T | undefined;
 }
 
-export interface WeakRefConstructor {
+interface WeakRefConstructor {
 
     readonly prototype: WeakRef<any>;
 
@@ -24,4 +24,4 @@ export interface WeakRefConstructor {
     new <T extends object>(target?: T): WeakRef<T>;
 }
 
-export declare var WeakRef: WeakRefConstructor;
+declare var WeakRef: WeakRefConstructor;

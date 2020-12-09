@@ -6,10 +6,10 @@
 // In Firefox Nightly, visit about:config and enable javascript.options.experimental.weakrefs
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IterableWeakSet = void 0;
-const weakref_pf_1 = require("./weakref-pf");
+//import { WeakRef } from './weakref-pf';
 class IterableWeakSet extends Set {
     addRef(el) {
-        return super.add(new weakref_pf_1.WeakRef(el));
+        return super.add(new WeakRef(el));
     }
     forEachRef(fn) {
         super.forEach(ref => {
