@@ -75,7 +75,9 @@ class TCPMVClient extends client_1.default {
     }
     async getMaps() {
         let rawMaps = await this.getRawMaps();
-        return mapstate_1.MapState.fromRawMaps(rawMaps, this.ptrSize);
+        let res = mapstate_1.MapState.fromRawMaps(rawMaps, this.ptrSize);
+        this._notify_maps_listeners(res);
+        return res;
     }
     async _internal_memread($startAddr, $endAddr) {
         throw new Error('Not implemented');

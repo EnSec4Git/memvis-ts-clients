@@ -15,6 +15,7 @@ export declare class MapState {
     readonly ptrSize: number;
     freeCount: number;
     usedLogSum: number;
+    freeMaxLog: number;
     maps: MapRow[];
     constructor($ptrSize: number);
     static fromRawMaps(rawMaps: RawMaps, ptrSize: number): MapState;

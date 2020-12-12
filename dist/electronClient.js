@@ -8,7 +8,6 @@ const mapstate_1 = require("./mapstate");
 class ElectronMVClient extends client_1.default {
     constructor($ipcRenderer) {
         super();
-        this.eventListeners = [];
         this.renderer = $ipcRenderer;
     }
     getPtrSize() {
@@ -21,9 +20,7 @@ class ElectronMVClient extends client_1.default {
         return new Promise((res, _) => {
             this.renderer.once("maps", (_, rawMaps) => {
                 let result = mapstate_1.MapState.fromRawMaps(rawMaps, this.ptrSize);
-                for (let el of this.eventListeners) {
-                    el(result);
-                }
+                this._notify_maps_listeners(result);
                 return res(result);
             });
             this.renderer.send("get-maps");
@@ -31,19 +28,6 @@ class ElectronMVClient extends client_1.default {
     }
     async _internal_memread($startAddr, $endAddr) {
         throw new Error('Not implemented');
-    }
-    addMapsEventListener($listener) {
-        this.eventListeners.push($listener);
-    }
-    removeMapsEventListener($listener) {
-        let i = 0;
-        for (let el of this.eventListeners) {
-            if (el == $listener) {
-                this.eventListeners.splice(i);
-                return;
-            }
-            i++;
-        }
     }
 }
 exports.default = ElectronMVClient;

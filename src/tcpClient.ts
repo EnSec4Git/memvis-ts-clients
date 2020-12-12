@@ -82,10 +82,12 @@ export default class TCPMVClient extends MVClient {
 
     async getMaps() {
         let rawMaps = await this.getRawMaps();
-        return MapState.fromRawMaps(rawMaps, this.ptrSize);
+        let res = MapState.fromRawMaps(rawMaps, this.ptrSize);
+        this._notify_maps_listeners(res);
+        return res;
     }
 
-    async _internal_memread($startAddr, $endAddr): Promise<MemRow> {
+    async _internal_memread($startAddr: bigint, $endAddr: bigint): Promise<MemRow> {
         throw new Error('Not implemented');
     }
 

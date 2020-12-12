@@ -18,6 +18,7 @@ class MockMVClient extends client_1.default {
         res.maps = [new mapstate_1.MapRow(mapstate_1.MapRow.FREE, 0n, 256n, 32), new mapstate_1.MapRow(mapstate_1.MapRow.USED, 256n, 65536n, 32)];
         res.freeCount = 1;
         res.usedLogSum = Math.log2(Math.max(1024, Number(65536n - 256n)));
+        this._notify_maps_listeners(res);
         return res;
     }
     async _internal_memread($startAddr, $endAddr) {
