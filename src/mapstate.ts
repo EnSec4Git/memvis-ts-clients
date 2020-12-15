@@ -32,9 +32,11 @@ export class MapState {
     usedLogSum: number;
     freeMaxLog: number;
     maps: MapRow[];
+    MAX_PTR: bigint;
 
     constructor($ptrSize: number) {
         this.ptrSize = $ptrSize;
+        this.MAX_PTR = pown(2n, 8 * $ptrSize);
     }
 
     static fromRawMaps(rawMaps: RawMaps, ptrSize: number) {
@@ -49,7 +51,7 @@ export class MapState {
         let first = new MapRow(MapRow.FREE, BigInt(0), BigInt(rawMaps[0][1]), ptrSize);
         let freeCount = 0,
             usedSum = 0,
-            freeMaxLog = Math.max(0, Math.log(Number(rawMaps[0][1])));
+            freeMaxLog = Math.max(0, Math.log2(Number(rawMaps[0][1])));
         res.push(first);
         freeCount += 1;
         for (let i = 0; i < rawMaps.length; i += 1) {
@@ -63,7 +65,7 @@ export class MapState {
             if (end == endAddr && i != rawMaps.length - 1) continue;
             freeCount += 1;
             res.push(new MapRow(MapRow.FREE, end, endAddr, ptrSize));
-            freeMaxLog = Math.max(freeMaxLog, Math.log(Number(endAddr - end)));
+            freeMaxLog = Math.max(freeMaxLog, Math.log2(Number(endAddr - end)));
         }
         let result = new MapState(ptrSize);
         result.freeCount = freeCount;

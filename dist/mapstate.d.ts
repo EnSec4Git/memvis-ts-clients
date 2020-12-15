@@ -17,6 +17,7 @@ export declare class MapState {
     usedLogSum: number;
     freeMaxLog: number;
     maps: MapRow[];
+    MAX_PTR: bigint;
     constructor($ptrSize: number);
     static fromRawMaps(rawMaps: RawMaps, ptrSize: number): MapState;
 }
