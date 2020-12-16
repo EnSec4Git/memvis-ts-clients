@@ -5,13 +5,18 @@ import MemRow from "./memRow";
 export default class MockMVClient extends MVClient {
     constructor() {
         super();
+        this.ptrSize = 32 / 8; // Size in BYTES
     }
     async getPtrSize() {
-        return 32;
+        return this.ptrSize;
     }
     async getMaps() {
         let res = new MapState(32);
-        res.maps = [new MapRow(MapRow.FREE, 0n, 256n, 32), new MapRow(MapRow.USED, 256n, 65536n, 32), new MapRow(MapRow.FREE, 65536n, res.MAX_PTR, 32)];
+        res.maps = [
+            new MapRow(MapRow.FREE, 0n, 256n, this.ptrSize),
+            new MapRow(MapRow.USED, 256n, 65536n, this.ptrSize),
+            new MapRow(MapRow.FREE, 65536n, res.MAX_PTR, this.ptrSize)
+        ];
         res.freeCount = 1;
         res.usedLogSum = Math.log2(Math.max(1024, Number(65536n - 256n)));
         res.freeMaxLog = Math.log2(Number(res.MAX_PTR - 65536n));
@@ -25,7 +30,7 @@ export default class MockMVClient extends MVClient {
             throw new Error('It\'s a bad idea to request this big of a row');
         }
         res.data = new Uint8Array(len);
-        for (let $i = $startAddr, $j=0; $i < $endAddr; $i++, $j++) {
+        for (let $i = $startAddr, $j = 0; $i < $endAddr; $i++, $j++) {
             res.data[$j] = Number($i % 256n)
         }
         return res;
