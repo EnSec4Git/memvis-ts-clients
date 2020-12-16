@@ -15,6 +15,7 @@ export { MemRow as MemRow };
 export default {
     MapState,
     MapRow,
+    MemRow,
     MockMVClient,
     TCPMVClient
 }

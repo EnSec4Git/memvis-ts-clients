@@ -16,6 +16,7 @@ exports.MemRow = memRow_1.default;
 exports.default = {
     MapState: mapstate_1.MapState,
     MapRow: mapstate_1.MapRow,
+    MemRow: memRow_1.default,
     MockMVClient: mockClient_1.default,
     TCPMVClient: tcpClient_1.default
 };

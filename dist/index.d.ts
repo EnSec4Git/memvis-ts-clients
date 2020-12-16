@@ -11,6 +11,7 @@ export { MemRow as MemRow };
 declare const _default: {
     MapState: typeof MapState;
     MapRow: typeof MapRow;
+    MemRow: typeof MemRow;
     MockMVClient: typeof MockMVClient;
     TCPMVClient: typeof TCPMVClient;
 };
