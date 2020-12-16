@@ -9,13 +9,18 @@ const memRow_1 = __importDefault(require("./memRow"));
 class MockMVClient extends client_1.default {
     constructor() {
         super();
+        this.ptrSize = 32 / 8; // Size in BYTES
     }
     async getPtrSize() {
-        return 32;
+        return this.ptrSize;
     }
     async getMaps() {
         let res = new mapstate_1.MapState(32);
-        res.maps = [new mapstate_1.MapRow(mapstate_1.MapRow.FREE, 0n, 256n, 32), new mapstate_1.MapRow(mapstate_1.MapRow.USED, 256n, 65536n, 32), new mapstate_1.MapRow(mapstate_1.MapRow.FREE, 65536n, res.MAX_PTR, 32)];
+        res.maps = [
+            new mapstate_1.MapRow(mapstate_1.MapRow.FREE, 0n, 256n, this.ptrSize),
+            new mapstate_1.MapRow(mapstate_1.MapRow.USED, 256n, 65536n, this.ptrSize),
+            new mapstate_1.MapRow(mapstate_1.MapRow.FREE, 65536n, res.MAX_PTR, this.ptrSize)
+        ];
         res.freeCount = 1;
         res.usedLogSum = Math.log2(Math.max(1024, Number(65536n - 256n)));
         res.freeMaxLog = Math.log2(Number(res.MAX_PTR - 65536n));
