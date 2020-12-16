@@ -8,6 +8,8 @@ export { client as MVClient };
 
 export { RawMaps as RawMaps };
 
+export { TCPMVClient as TCPMVClient };
+
 export { MapRow as MapRow }
 export { MapState as MapState }
 export { MemRow as MemRow };
