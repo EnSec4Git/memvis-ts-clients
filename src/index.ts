@@ -7,6 +7,9 @@ export { client as MVClient };
 
 export { RawMaps as RawMaps };
 
+export { MapRow as MapRow }
+export { MapState as MapState };
+
 export default {
     MapState,
     MapRow,
