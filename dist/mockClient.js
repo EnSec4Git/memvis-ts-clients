@@ -15,7 +15,7 @@ class MockMVClient extends client_1.default {
         return this.ptrSize;
     }
     async getMaps() {
-        let res = new mapstate_1.MapState(32);
+        let res = new mapstate_1.MapState(4);
         res.maps = [
             new mapstate_1.MapRow(mapstate_1.MapRow.FREE, 0n, 256n, this.ptrSize),
             new mapstate_1.MapRow(mapstate_1.MapRow.USED, 256n, 65536n, this.ptrSize),

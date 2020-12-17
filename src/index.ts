@@ -23,9 +23,12 @@ let DEFAULT_EXPORT = {
     // TCPMVClient
 };
 
-if (typeof window === 'undefined') {
+// if (typeof window === 'undefined') {
+if(process && process.env) {
+    //console.log(window, typeof(window));
+    //console.log(window.document)
     let TCPMVClient = require('./tcpClient').default;
-    Object.assign(module.exports, {
+    Object.assign(exports, {
         TCPMVClient
     });
     Object.assign(DEFAULT_EXPORT, { TCPMVClient });
