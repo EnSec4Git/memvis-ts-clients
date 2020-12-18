@@ -1,8 +1,8 @@
 import { MapState, MapRow, RawMaps } from './mapstate';
 import client from './client';
 import MockMVClient from './mockClient';
-import TCPMVClientPromise, { TCPMVClientInterface } from './tcpClient';
-let tcpClientClass = TCPMVClientPromise as unknown as ($confirm: boolean) => Promise<TCPMVClientInterface>;
+import TCPMVClient, { TCPMVClientInterface } from './tcpClient';
+//let tcpClientClass = TCPMVClientPromise as unknown as ($confirm: boolean) => Promise<TCPMVClientInterface>;
 import MemRow from './memRow';
 
 export { client as MVClient };
@@ -10,7 +10,7 @@ export { client as MVClient };
 export { RawMaps as RawMaps };
 
 // export { tcpClientClass as TCPMVClientPromise };
-// export { MockMVClient as MockMVClient };
+export { MockMVClient as MockMVClient };
 
 export { MapRow as MapRow }
 export { MapState as MapState }
@@ -26,13 +26,12 @@ export { MemRow as MemRow };
 
 // export default DEFAULT_EXPORT;
 
-export default (useTcp: boolean) => {
-    return {
-        //client as MVClient,
-        //RawMaps,
-        TCPMVClientPromise: tcpClientClass(useTcp),
-        MockMVClient,
-        MapRow,
-        //MapState
-    }
+export default {
+    //client as MVClient,
+    //RawMaps,
+    //TCPMVClientPromise: tcpClientClass(useTcp),
+    TCPMVClient,
+    MockMVClient,
+    MapRow,
+    MapState
 }

@@ -1,4 +1,5 @@
 /// <reference types="./node_modules/electron" />
+/// <reference types="node" />
 import { PtrArrayTypes } from './ptrTypes';
 import { Socket } from 'net';
 import MVClient from './client';
@@ -15,29 +16,18 @@ export interface TCPMVClientInterface extends MVClient {
     getMaps(): Promise<MapState>;
     startElectronServer($ipcMain: IpcMain): Promise<any>;
 }
-declare const _default: ($confirm: boolean) => Promise<{
-    new ($host: string, $port: number): {
-        _client: Socket;
-        host: string;
-        port: number;
-        ptrSize?: number;
-        _PAC?: PtrArrayTypes;
-        _connect(): Promise<unknown>;
-        _close(): void;
-        getPtrSize(): Promise<number>;
-        getRawMaps(): Promise<RawMaps>;
-        getMaps(): Promise<MapState>;
-        _internal_memread($startAddr: bigint, $endAddr: bigint): Promise<MemRow>;
-        startElectronServer($ipcMain: IpcMain): Promise<void>;
-        _memrefs: import("./iterableWeakSet").IterableWeakSet<MemRow>;
-        eventListeners: import("./client").MapsEventListener[];
-        _notify_maps_listeners(result: MapState): void;
-        memr($startAddr: bigint, $endAddr: bigint): Promise<MemRow>;
-        addMapsEventListener($listener: import("./client").MapsEventListener): void;
-        removeMapsEventListener($listener: import("./client").MapsEventListener): void;
-        refresh(): Promise<void>;
-    };
-} | {
-    new (): {};
-}>;
-export default _default;
+export default class TCPMVClient extends MVClient {
+    private _client;
+    host: string;
+    port: number;
+    ptrSize?: number;
+    _PAC?: PtrArrayTypes;
+    constructor($host: string, $port: number, $socketConstructor: typeof Socket);
+    _connect(): Promise<unknown>;
+    _close(): void;
+    getPtrSize(): Promise<number>;
+    getRawMaps(): Promise<RawMaps>;
+    getMaps(): Promise<MapState>;
+    _internal_memread($startAddr: bigint, $endAddr: bigint): Promise<MemRow>;
+    startElectronServer($ipcMain: IpcMain): Promise<void>;
+}
