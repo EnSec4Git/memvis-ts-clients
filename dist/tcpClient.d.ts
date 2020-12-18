@@ -15,7 +15,7 @@ export interface TCPMVClientInterface extends MVClient {
     getMaps(): Promise<MapState>;
     startElectronServer($ipcMain: IpcMain): Promise<any>;
 }
-declare const _default: () => Promise<{
+declare const _default: ($confirm: boolean) => Promise<{
     new ($host: string, $port: number): {
         _client: Socket;
         host: string;

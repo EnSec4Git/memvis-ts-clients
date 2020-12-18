@@ -2,7 +2,7 @@ import { MapState, MapRow, RawMaps } from './mapstate';
 import client from './client';
 import MockMVClient from './mockClient';
 import { TCPMVClientInterface } from './tcpClient';
-declare let tcpClientClass: Promise<TCPMVClientInterface>;
+declare let tcpClientClass: ($confirm: boolean) => Promise<TCPMVClientInterface>;
 import MemRow from './memRow';
 export { client as MVClient };
 export { RawMaps as RawMaps };
@@ -16,6 +16,6 @@ declare let DEFAULT_EXPORT: {
     MapRow: typeof MapRow;
     MemRow: typeof MemRow;
     MockMVClient: typeof MockMVClient;
-    TCPMVClient: Promise<TCPMVClientInterface>;
+    TCPMVClient: ($confirm: boolean) => Promise<TCPMVClientInterface>;
 };
 export default DEFAULT_EXPORT;

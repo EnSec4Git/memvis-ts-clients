@@ -26,11 +26,11 @@ define(["require", "exports", "assert", "./ptrTypes", "./client", "./mapstate"],
     assert_1 = __importDefault(assert_1);
     client_1 = __importDefault(client_1);
     ;
-    exports.default = (async () => {
+    exports.default = (async ($confirm) => {
         // type MODULE_SIG = {
         //     TCPMVClient: TCPMVClient;
         // }
-        try {
+        if ($confirm) {
             let SocketImpl = (await new Promise((resolve_1, reject_1) => { require(['net'], resolve_1, reject_1); }).then(__importStar)).Socket;
             return class TCPMVClient extends client_1.default {
                 constructor($host, $port) {
@@ -121,8 +121,8 @@ define(["require", "exports", "assert", "./ptrTypes", "./client", "./mapstate"],
                 }
             };
         }
-        catch (err) {
-            return class TCPMVClient {
+        else {
+            return class MockTCPMVClient {
             };
         }
         // let DEF_EXPORT;

@@ -13,7 +13,7 @@ define(["require", "exports", "./mapstate", "./client", "./mockClient", "./tcpCl
     Object.defineProperty(exports, "MapRow", { enumerable: true, get: function () { return mapstate_1.MapRow; } });
     exports.MVClient = client_1.default;
     exports.MockMVClient = mockClient_1.default;
-    let tcpClientClass = tcpClient_1.default();
+    let tcpClientClass = tcpClient_1.default;
     exports.TCPMVClientPromise = tcpClientClass;
     exports.MemRow = memRow_1.default;
     let DEFAULT_EXPORT = {
