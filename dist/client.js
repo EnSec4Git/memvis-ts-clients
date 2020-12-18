@@ -1,43 +1,44 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const iterableWeakSet_1 = require("./iterableWeakSet");
-class MVClient {
-    constructor() {
-        this.eventListeners = [];
-        this._memrefs = new iterableWeakSet_1.IterableWeakSet();
-    }
-    _notify_maps_listeners(result) {
-        for (let el of this.eventListeners) {
-            el(result);
+define(["require", "exports", "./iterableWeakSet"], function (require, exports, iterableWeakSet_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    class MVClient {
+        constructor() {
+            this.eventListeners = [];
+            this._memrefs = new iterableWeakSet_1.IterableWeakSet();
         }
-    }
-    async memr($startAddr, $endAddr) {
-        let res = await this._internal_memread($startAddr, $endAddr);
-        this._memrefs.addRef(res);
-        return res;
-    }
-    addMapsEventListener($listener) {
-        this.eventListeners.push($listener);
-    }
-    removeMapsEventListener($listener) {
-        let i = 0;
-        for (let el of this.eventListeners) {
-            if (el == $listener) {
-                this.eventListeners.splice(i);
-                return;
+        _notify_maps_listeners(result) {
+            for (let el of this.eventListeners) {
+                el(result);
             }
-            i++;
+        }
+        async memr($startAddr, $endAddr) {
+            let res = await this._internal_memread($startAddr, $endAddr);
+            this._memrefs.addRef(res);
+            return res;
+        }
+        addMapsEventListener($listener) {
+            this.eventListeners.push($listener);
+        }
+        removeMapsEventListener($listener) {
+            let i = 0;
+            for (let el of this.eventListeners) {
+                if (el == $listener) {
+                    this.eventListeners.splice(i);
+                    return;
+                }
+                i++;
+            }
+        }
+        refresh() {
+            let promises = [];
+            this._memrefs.forEachRef((x) => {
+                promises.push((async () => {
+                    x.fromOther(await this._internal_memread(x.startAddr, x.endAddr));
+                })());
+            });
+            return Promise.all(promises).then((x) => undefined);
         }
     }
-    refresh() {
-        let promises = [];
-        this._memrefs.forEachRef((x) => {
-            promises.push((async () => {
-                x.fromOther(await this._internal_memread(x.startAddr, x.endAddr));
-            })());
-        });
-        return Promise.all(promises).then((x) => undefined);
-    }
-}
-exports.default = MVClient;
-;
+    exports.default = MVClient;
+    ;
+});

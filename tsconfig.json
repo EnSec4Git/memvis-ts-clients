@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
+        "module": "amd",
         "target": "esnext",
         "declaration": true,
         "esModuleInterop": true,
@@ -10,8 +10,10 @@
             "src/weakref-pf.ts"
         ],
         "types": [
-            "node"
-        ]
+            "node",
+            "./node_modules/electron"
+        ],
+        "baseUrl": "."
     },
     "include": [
         "src/**/*"

@@ -1,3 +1,4 @@
+/// <reference types="./node_modules/electron" />
 import { IpcRenderer } from "electron";
 import MVClient from "./client";
 import { MapState } from "./mapstate";
