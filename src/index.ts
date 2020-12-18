@@ -9,30 +9,30 @@ export { client as MVClient };
 
 export { RawMaps as RawMaps };
 
-export { tcpClientClass as TCPMVClientPromise };
-export { MockMVClient as MockMVClient };
+// export { tcpClientClass as TCPMVClientPromise };
+// export { MockMVClient as MockMVClient };
 
 export { MapRow as MapRow }
 export { MapState as MapState }
 export { MemRow as MemRow };
 
-let DEFAULT_EXPORT = {
-    MapState,
-    MapRow,
-    MemRow,
-    MockMVClient,
-    TCPMVClient: tcpClientClass
-};
+// let DEFAULT_EXPORT = {
+//     MapState,
+//     MapRow,
+//     MemRow,
+//     MockMVClient,
+//     TCPMVClient: tcpClientClass
+// };
 
-// if (typeof window === 'undefined') {
-// if(process && process.env) {
-//     //console.log(window, typeof(window));
-//     //console.log(window.document)
-//     let TCPMVClient = require('./tcpClient').default;
-//     Object.assign(exports, {
-//         TCPMVClient
-//     });
-//     Object.assign(DEFAULT_EXPORT, { TCPMVClient });
-// }
+// export default DEFAULT_EXPORT;
 
-export default DEFAULT_EXPORT;
+export default (useTcp: boolean) => {
+    return {
+        //client as MVClient,
+        //RawMaps,
+        TCPMVClientPromise: tcpClientClass(useTcp),
+        MockMVClient,
+        MapRow,
+        //MapState
+    }
+}
