@@ -20,11 +20,11 @@ export interface TCPMVClientInterface extends MVClient {
     getMaps(): Promise<MapState>;
     startElectronServer($ipcMain: IpcMain): Promise<any>;
 };
-export default (async () => {
+export default (async ($confirm: boolean) => {
     // type MODULE_SIG = {
     //     TCPMVClient: TCPMVClient;
     // }
-    try {
+    if($confirm) {
         let SocketImpl = (await import('net')).Socket;
         return class TCPMVClient extends MVClient {
             private _client: Socket;
@@ -123,8 +123,8 @@ export default (async () => {
                 });
             }
         }
-    } catch (err) {
-        return class TCPMVClient {}
+    } else {
+        return class MockTCPMVClient {}
     }
 
     

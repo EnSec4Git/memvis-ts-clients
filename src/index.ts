@@ -2,7 +2,7 @@ import { MapState, MapRow, RawMaps } from './mapstate';
 import client from './client';
 import MockMVClient from './mockClient';
 import TCPMVClientPromise, { TCPMVClientInterface } from './tcpClient';
-let tcpClientClass = TCPMVClientPromise() as unknown as Promise<TCPMVClientInterface>;
+let tcpClientClass = TCPMVClientPromise as unknown as ($confirm: boolean) => Promise<TCPMVClientInterface>;
 import MemRow from './memRow';
 
 export { client as MVClient };
