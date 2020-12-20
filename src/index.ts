@@ -10,6 +10,7 @@ export { client as MVClient };
 export { RawMaps as RawMaps };
 
 // export { tcpClientClass as TCPMVClientPromise };
+export { TCPMVClient };
 export { MockMVClient as MockMVClient };
 
 export { MapRow as MapRow }
