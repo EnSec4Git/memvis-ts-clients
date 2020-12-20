@@ -5,6 +5,7 @@ import TCPMVClient from './tcpClient';
 import MemRow from './memRow';
 export { client as MVClient };
 export { RawMaps as RawMaps };
+export { TCPMVClient };
 export { MockMVClient as MockMVClient };
 export { MapRow as MapRow };
 export { MapState as MapState };
