@@ -1,4 +1,3 @@
-import assert from 'assert';
 import { PtrArray } from './ptrTypes';
 import MVClient from './client';
 import { MapState } from './mapstate';
@@ -30,11 +29,8 @@ export default class TCPMVClient extends MVClient {
             this._client.on('error', rej);
             this._client.on('data', (data) => {
                 const _szs = Uint8Array.from(data);
-                try {
-                    assert(_szs.length === 1);
-                }
-                catch (err) {
-                    rej(err);
+                if (_szs.length !== 1) {
+                    rej(new Error('Expected a single byte as answer to pointer size query!'));
                 }
                 [this.ptrSize] = _szs;
                 this._PAC = PtrArray(this.ptrSize);
