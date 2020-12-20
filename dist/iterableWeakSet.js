@@ -3,24 +3,18 @@
 // the spec contains an [iterable WeakMap implementation](https://github.com/tc39/proposal-weakrefs#iterable-weakmaps)
 // NOTE: this WeakSet implementation is incomplete, only does what I needed
 // In Firefox Nightly, visit about:config and enable javascript.options.experimental.weakrefs
-define(["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.IterableWeakSet = void 0;
-    //import { WeakRef } from './weakref-pf';
-    class IterableWeakSet extends Set {
-        addRef(el) {
-            return super.add(new WeakRef(el));
-        }
-        forEachRef(fn) {
-            super.forEach(ref => {
-                const value = ref.deref();
-                if (value)
-                    fn(value);
-                else
-                    this.delete(ref);
-            });
-        }
+//import { WeakRef } from './weakref-pf';
+export class IterableWeakSet extends Set {
+    addRef(el) {
+        return super.add(new WeakRef(el));
     }
-    exports.IterableWeakSet = IterableWeakSet;
-});
+    forEachRef(fn) {
+        super.forEach(ref => {
+            const value = ref.deref();
+            if (value)
+                fn(value);
+            else
+                this.delete(ref);
+        });
+    }
+}

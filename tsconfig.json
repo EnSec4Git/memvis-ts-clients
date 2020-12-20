@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "module": "amd",
+        "module": "es6",
         "target": "esnext",
         "declaration": true,
         "esModuleInterop": true,
