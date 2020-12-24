@@ -1,4 +1,3 @@
-/// <reference types="./node_modules/electron" />
 /// <reference types="node" />
 import { PtrArrayTypes } from './ptrTypes';
 import { Socket } from 'net';

@@ -2,18 +2,20 @@
     "compilerOptions": {
         "module": "es6",
         "target": "esnext",
+        "noEmitOnError": true,
         "declaration": true,
         "esModuleInterop": true,
         "outDir": "./dist",
-        "typeRoots": [
-            "node_modules/@types",
-            "src/weakref.d.ts" // Hack to fix TypeScript compiler ommission
-                               // Should become obsolete by Q1-2 2021
-        ],
-        "types": [
-            "node",
-            "./node_modules/electron"
-        ],
+        "moduleResolution": "node",
+        // "typeRoots": [
+        //     "node_modules/@types",
+        //     "src/weakref.d.ts" // Hack to fix TypeScript compiler ommission
+        //                        // Should become obsolete by Q1-2 2021
+        // ],
+        // "types": [
+        //     "node",
+        //     "./node_modules/electron"
+        // ],
         "baseUrl": "."
     },
     "include": [
