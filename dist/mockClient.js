@@ -10,7 +10,7 @@ export default class MockMVClient extends MVClient {
         return this.ptrSize;
     }
     async getMaps() {
-        let res = new MapState(4);
+        let res = new MapState(this.ptrSize);
         res.maps = [
             new MapRow(MapRow.FREE, 0n, 256n, this.ptrSize),
             new MapRow(MapRow.USED, 256n, 65536n, this.ptrSize),

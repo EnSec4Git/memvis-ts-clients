@@ -1,7 +1,71 @@
 import { PtrArray } from './ptrTypes';
 import MVClient from './client';
 import { MapState } from './mapstate';
+import MemRow from './memRow';
 ;
+class ReadPromise {
+    constructor(requestSize) {
+        this.requestSize = requestSize;
+    }
+    init() {
+        this.promise = new Promise((res, rej) => {
+            this.resolve = res;
+            this.reject = rej;
+        });
+    }
+}
+class StreamPromiseReader {
+    constructor(socket) {
+        this.socket = socket;
+        this.errorHandler = (err) => {
+            for (let prom of this.waitingPromises) {
+                prom.reject(new Error('Error: ' + err.toString()));
+            }
+        };
+        this.endHandler = () => {
+            for (let prom of this.waitingPromises) {
+                prom.reject(new Error('Other side hung up'));
+            }
+        };
+        this.dataHandler = (data) => {
+            this.leftoverBuffer = Buffer.concat([this.leftoverBuffer, data]);
+            this.drain();
+        };
+        this.leftoverBuffer = Buffer.from([]);
+        this.waitingPromises = [];
+        this.socket.removeAllListeners();
+        this.socket.on('error', this.errorHandler);
+        this.socket.on('end', this.endHandler);
+        this.socket.on('data', this.dataHandler);
+    }
+    drain() {
+        let TBC = this.waitingPromises[0];
+        // console.log('Draining', this.leftoverBuffer.length)
+        while (TBC && TBC.requestSize <= this.leftoverBuffer.length) {
+            // console.log(Object.assign({}, TBC, {socket: undefined}))
+            // console.log(TBC.requestSize)
+            TBC.resolve(this.leftoverBuffer.slice(0, TBC.requestSize));
+            let reqSize = TBC.requestSize;
+            this.waitingPromises.shift();
+            TBC = this.waitingPromises[0];
+            // console.log('New TBC: ', Object.assign({}, TBC, {socket: undefined}))
+            this.leftoverBuffer = this.leftoverBuffer.slice(reqSize);
+            // console.log('Leftover: ', this.leftoverBuffer.length)
+        }
+    }
+    detach() {
+        this.socket.removeListener('error', this.errorHandler);
+        this.socket.removeListener('end', this.endHandler);
+        this.socket.removeListener('data', this.dataHandler);
+    }
+    async readNb(n) {
+        let prom = new ReadPromise(n);
+        prom.init();
+        this.waitingPromises.push(prom);
+        this.drain();
+        return prom.promise;
+    }
+}
 export default class TCPMVClient extends MVClient {
     constructor($host, $port, $socketConstructor) {
         super();
@@ -71,7 +135,30 @@ export default class TCPMVClient extends MVClient {
         return res;
     }
     async _internal_memread($startAddr, $endAddr) {
-        throw new Error('Not implemented');
+        this._client.removeAllListeners();
+        const reader = new StreamPromiseReader(this._client);
+        const encoder = new TextEncoder();
+        const startAddrArray = this._PAC.bytesFromPointer($startAddr);
+        const endAddrArray = this._PAC.bytesFromPointer($endAddr);
+        const command = Buffer.concat([Buffer.from(encoder.encode('MEMR')), Buffer.from(startAddrArray), Buffer.from(endAddrArray)]);
+        try {
+            this._client.write(command);
+            const pref = await reader.readNb(6);
+            if (pref.toString() == 'ERROR:') {
+                let errDescr = (await reader.readNb(16)).toString();
+                console.log('Error:', errDescr);
+                throw new Error(errDescr);
+            }
+            else {
+                let resData = await reader.readNb(Number($endAddr - $startAddr));
+                reader.detach();
+                return new MemRow($startAddr, $endAddr, resData);
+            }
+        }
+        catch (err) {
+            console.log(err);
+            throw new Error('Could not read response preamble');
+        }
     }
     async startElectronServer($ipcMain) {
         if (!this.ptrSize) {
@@ -79,7 +166,6 @@ export default class TCPMVClient extends MVClient {
         }
         $ipcMain.on('get-maps', async (evt) => {
             const rawMaps = await this.getRawMaps();
-            //console.log('MAPS: ', rawMaps);
             evt.reply('maps', rawMaps);
         });
         $ipcMain.on('get-ptrsize', (evt) => {
