@@ -4,6 +4,7 @@ import MVClient from './client';
 import { MapState, RawMaps } from './mapstate';
 import { IpcMain } from 'electron';
 import MemRow from './memRow';
+import mutexify from 'mutexify/promise';
 
 export interface TCPMVClientInterface extends MVClient {
     host: string;
@@ -92,6 +93,7 @@ class StreamPromiseReader {
 
 export default class TCPMVClient extends MVClient {
     private _client: Socket;
+    private _lock: ReturnType<typeof mutexify>;
     host: string;
     port: number;
     ptrSize?: number;
@@ -104,6 +106,7 @@ export default class TCPMVClient extends MVClient {
         this._client = new $socketConstructor();
         this.ptrSize = undefined;
         this._PAC = undefined;
+        this._lock = mutexify()
     }
 
     _connect() {
@@ -122,6 +125,9 @@ export default class TCPMVClient extends MVClient {
     }
 
     getPtrSize(): Promise<number> {
+        if (this.ptrSize) {
+            return new Promise((res, rej) => res(this.ptrSize));
+        }
         return new Promise((res, rej) => {
             this._client.on('error', rej);
             this._client.on('data', (data) => {
@@ -170,27 +176,32 @@ export default class TCPMVClient extends MVClient {
     }
 
     async _internal_memread($startAddr: bigint, $endAddr: bigint): Promise<MemRow> {
-        this._client.removeAllListeners();
-        const reader = new StreamPromiseReader(this._client);
-        const encoder = new TextEncoder()
-        const startAddrArray = (this._PAC as any).bytesFromPointer($startAddr)
-        const endAddrArray = (this._PAC as any).bytesFromPointer($endAddr)
-        const command = Buffer.concat([Buffer.from(encoder.encode('MEMR')), Buffer.from(startAddrArray), Buffer.from(endAddrArray)]);
+        const releaseLock = await this._lock();
         try {
-            this._client.write(command);
-            const pref = await reader.readNb(6);
-            if (pref.toString() == 'ERROR:') {
-                let errDescr = (await reader.readNb(16)).toString();
-                console.log('Error:', errDescr);
-                throw new Error(errDescr);
-            } else {
-                let resData = await reader.readNb(Number($endAddr - $startAddr));
-                reader.detach();
-                return new MemRow($startAddr, $endAddr, resData);
+            this._client.removeAllListeners();
+            const reader = new StreamPromiseReader(this._client);
+            const encoder = new TextEncoder()
+            const startAddrArray = (this._PAC as any).bytesFromPointer($startAddr)
+            const endAddrArray = (this._PAC as any).bytesFromPointer($endAddr)
+            const command = Buffer.concat([Buffer.from(encoder.encode('MEMR')), Buffer.from(startAddrArray), Buffer.from(endAddrArray)]);
+            try {
+                this._client.write(command);
+                const pref = await reader.readNb(6);
+                if (pref.toString() == 'ERROR:') {
+                    let errDescr = (await reader.readNb(16)).toString();
+                    console.log('Error:', errDescr);
+                    throw new Error(errDescr);
+                } else {
+                    let resData = await reader.readNb(Number($endAddr - $startAddr));
+                    reader.detach();
+                    return new MemRow($startAddr, $endAddr, resData);
+                }
+            } catch (err) {
+                console.log(err)
+                throw new Error('Could not read response preamble');
             }
-        } catch (err) {
-            console.log(err)
-            throw new Error('Could not read response preamble');
+        } finally {
+            releaseLock();
         }
     }
 
@@ -203,6 +214,11 @@ export default class TCPMVClient extends MVClient {
         $ipcMain.on('get-ptrsize', (evt) => {
             evt.reply('ptrsize', this.ptrSize);
         });
+        $ipcMain.on('get-mem', async (evt, arg) => {
+            const addrs: [bigint, bigint] = [...arg] as any;
+            const resRow = await this.memr(addrs[0], addrs[1]);
+            evt.reply('mem', resRow.data);
+        })
     }
 }
 
