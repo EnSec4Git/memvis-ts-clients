@@ -6,7 +6,7 @@ async function main() {
     await client._connect()
     await client.getPtrSize()
     const mapState = await client.getMaps()
-    console.log(mapState)
+    console.log('Received map state: ', mapState)
     let nfm: MapRow;
     for(let mp of mapState.maps) {
         if(mp.type == 'USED') {
@@ -15,7 +15,7 @@ async function main() {
         }
     }
     const memRow = await client.memr(nfm.start, nfm.start + BigInt(200))
-    console.log(memRow)
+    console.log('Received data: ', memRow)
     process.exit(0)
 }
 

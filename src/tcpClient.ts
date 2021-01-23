@@ -209,7 +209,6 @@ export default class TCPMVClient extends MVClient {
         if (!this.ptrSize) { await this.getPtrSize(); }
         $ipcMain.on('get-maps', async (evt) => {
             const rawMaps = await this.getRawMaps();
-            console.log(rawMaps)
             // evt.reply('maps', rawMaps);
             evt.sender.send('maps', rawMaps);
         });

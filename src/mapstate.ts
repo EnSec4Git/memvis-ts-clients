@@ -48,7 +48,7 @@ export class MapState {
             return emptyState;
         }
         let res = [];
-        let first = new MapRow(MapRow.FREE, BigInt(0), BigInt(rawMaps[0][1]), ptrSize);
+        let first = new MapRow(MapRow.FREE, BigInt(0), BigInt(rawMaps[0][0]), ptrSize);
         let freeCount = 0,
             usedSum = 0,
             freeMaxLog = Math.max(0, Math.log2(Number(rawMaps[0][1])));

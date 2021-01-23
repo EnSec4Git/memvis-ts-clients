@@ -15,11 +15,9 @@ describe('Electron Server/Client', function() {
         assert.strictEqual(bitsTcp, bitsEl);
     })
     
-    it('should transmit the same data', async () => {
-        
+    it('Should read the same memory', async () => {
         const mapsTcp = await mockTCPClient.getMaps();
         const mapsEl = await electronClient.getMaps();
-        // console.log(mapsTcp);
         assert.deepStrictEqual(mapsEl, mapsTcp);
     })
 })
