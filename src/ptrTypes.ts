@@ -21,7 +21,7 @@ function mod2y(x: bigint, y: number) {
 
 export function PtrArray(n: number): PtrArrayTypes {
   let res //: _PtrArrayTypes;
-  let r1f;
+  let r1f: (x: Buffer, o: number) => number | bigint;
   let t8a;
   switch (n) {
     case 2:

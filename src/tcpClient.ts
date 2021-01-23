@@ -209,15 +209,19 @@ export default class TCPMVClient extends MVClient {
         if (!this.ptrSize) { await this.getPtrSize(); }
         $ipcMain.on('get-maps', async (evt) => {
             const rawMaps = await this.getRawMaps();
-            evt.reply('maps', rawMaps);
+            console.log(rawMaps)
+            // evt.reply('maps', rawMaps);
+            evt.sender.send('maps', rawMaps);
         });
         $ipcMain.on('get-ptrsize', (evt) => {
-            evt.reply('ptrsize', this.ptrSize);
+            // evt.reply('ptrsize', this.ptrSize);
+            evt.sender.send('ptrsize', this.ptrSize);
         });
         $ipcMain.on('get-mem', async (evt, arg) => {
             const addrs: [bigint, bigint] = [...arg] as any;
             const resRow = await this.memr(addrs[0], addrs[1]);
-            evt.reply('mem', resRow.data);
+            // evt.reply('mem', resRow.data);
+            evt.sender.send('mem', resRow.data);
         })
     }
 }
