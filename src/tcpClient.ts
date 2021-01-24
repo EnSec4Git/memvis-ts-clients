@@ -99,11 +99,11 @@ export default class TCPMVClient extends MVClient {
     ptrSize?: number;
     _PAC?: PtrArrayTypes;
 
-    constructor($host: string, $port: number, $socketConstructor: typeof Socket) {
+    constructor($host: string, $port: number, $socketFactory: () => Socket) {
         super();
         this.host = $host;
         this.port = $port;
-        this._client = new $socketConstructor();
+        this._client = $socketFactory();
         this.ptrSize = undefined;
         this._PAC = undefined;
         this._lock = mutexify()

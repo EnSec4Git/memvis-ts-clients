@@ -2,7 +2,7 @@ import mvc, { MapRow } from '../src/index'
 import net from 'net'
 
 async function main() {
-    let client = new mvc.TCPMVClient("127.0.0.1", 2160, net.Socket)
+    let client = new mvc.TCPMVClient("127.0.0.1", 2160, () => new net.Socket())
     await client._connect()
     await client.getPtrSize()
     const mapState = await client.getMaps()
