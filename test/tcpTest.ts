@@ -104,6 +104,7 @@ describe('TCP Client', function () {
     })
 
     it('Should return proper memr() values', async function (this: Mocha.Context & { mitm?: ReturnType<typeof mitm>, client?: MockMVClient }) {
+        this.timeout(5000);
         const clientPtrSize = 4;
         this.client = new MockMVClient();
         const tcpClient = new TCPMVClient('localhost', 2160, MockSocketFactory);
