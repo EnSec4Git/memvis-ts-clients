@@ -1,5 +1,6 @@
 import MVClient from "./client";
 import { MapState } from "./mapstate";
+import MemRow from "./memRow";
 export default class ElectronMVClient extends MVClient {
     constructor($ipcRenderer) {
         super();
@@ -22,6 +23,12 @@ export default class ElectronMVClient extends MVClient {
         });
     }
     async _internal_memread($startAddr, $endAddr) {
-        throw new Error('Not implemented');
+        return new Promise((res, _) => {
+            this.renderer.once("mem", (_, row) => {
+                res(new MemRow($startAddr, $endAddr, row));
+            });
+            this.renderer.send("get-mem", [$startAddr, $endAddr]);
+        });
+        // throw new Error('Not implemented');
     }
 }

@@ -66,7 +66,7 @@ class StreamPromiseReader {
         while (TBC && TBC.requestSize <= this.leftoverBuffer.length) {
             // console.log(Object.assign({}, TBC, {socket: undefined}))
             // console.log(TBC.requestSize)
-            TBC.resolve(this.leftoverBuffer.slice(0, TBC.requestSize))
+            TBC.resolve(new Uint8Array(this.leftoverBuffer.slice(0, TBC.requestSize)));
             let reqSize = TBC.requestSize;
             this.waitingPromises.shift();
             TBC = this.waitingPromises[0]
@@ -181,8 +181,8 @@ export default class TCPMVClient extends MVClient {
             this._client.removeAllListeners();
             const reader = new StreamPromiseReader(this._client);
             const encoder = new TextEncoder()
-            const startAddrArray = (this._PAC as any).bytesFromPointer($startAddr)
-            const endAddrArray = (this._PAC as any).bytesFromPointer($endAddr)
+            const startAddrArray = this._PAC.bytesFromPointer($startAddr)
+            const endAddrArray = this._PAC.bytesFromPointer($endAddr)
             const command = Buffer.concat([Buffer.from(encoder.encode('MEMR')), Buffer.from(startAddrArray), Buffer.from(endAddrArray)]);
             try {
                 this._client.write(command);

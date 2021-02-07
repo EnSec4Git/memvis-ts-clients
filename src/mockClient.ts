@@ -1,4 +1,3 @@
-import { RawMaps } from "src";
 import MVClient from "./client";
 import { MapRow, MapState } from "./mapstate";
 import MemRow from "./memRow";

@@ -1,12 +1,12 @@
 import { MockMVClient, RawMaps, TCPMVClient } from "../../src";
 import { PtrArray } from "../../src/ptrTypes";
 
-class FakeSocket {}
+// class FakeSocket {}
 
 export class MockTCPMVClient extends TCPMVClient {
     private mockClient: MockMVClient
     constructor() {
-        super('localhost', 2160, FakeSocket as any)
+        super('localhost', 2160, () => {return {} as any})
         this.mockClient = new MockMVClient()
     }
 

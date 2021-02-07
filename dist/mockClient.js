@@ -1,10 +1,12 @@
 import MVClient from "./client";
 import { MapRow, MapState } from "./mapstate";
 import MemRow from "./memRow";
+import { PtrArray } from "./ptrTypes";
 export default class MockMVClient extends MVClient {
     constructor() {
         super();
         this.ptrSize = 32 / 8; // Size in BYTES
+        this._PAC = PtrArray(this.ptrSize);
     }
     async getPtrSize() {
         return this.ptrSize;

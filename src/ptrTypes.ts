@@ -1,6 +1,12 @@
 type _PtrArrayTypes = Uint8Array | Uint16Array | Uint32Array | BigUint64Array;
 
-export type PtrArrayTypes = _PtrArrayTypes & { readOneFromBuffer: (x: any, o: any) => _PtrArrayTypes };
+export type PtrArrayTypes = _PtrArrayTypes & { 
+  readOneFromBuffer: (x: Buffer, o: number) => PtrValType;
+  writeOneToBuffer: (x: Buffer, o: number, v: PtrValType) => void;
+  bytesFromPointer: (x: PtrValType) => Uint8Array;
+};
+
+export type PtrValType = number | bigint;
 
 const Do2 = [
   1n,
@@ -19,32 +25,44 @@ function mod2y(x: bigint, y: number) {
   return Number((x / Do2[y]) % 256n)
 }
 
-export function PtrArray(n: number): PtrArrayTypes {
-  let res //: _PtrArrayTypes;
-  let r1f: (x: Buffer, o: number) => number | bigint;
-  let t8a;
-  switch (n) {
+export function PtrArray(byteSize: number): PtrArrayTypes {
+  let res;
+  let r1f: (x: Buffer, o: number) => PtrValType;
+  let w1t: (x: Buffer, o: number, v: PtrValType) => void;
+  let t8a: (x: PtrValType) => Uint8Array;
+  switch (byteSize) {
     case 2:
       res = Uint16Array;
-      r1f = ((x: Buffer, o: number) => x.readUInt16LE(o));
-      // t8a = ((x: Uint16Array) => )
+      t8a = (x) => {
+        let vals = [0, 1].map(y => mod2y(BigInt(x), y))
+        return Uint8Array.from(vals)
+      }
+      r1f = ((x, o) => x.readUInt16LE(o));
+      w1t = ((x, o, v) => x.writeUInt16LE(Number(v), o));
       break;
     case 4:
       res = Uint32Array;
-      r1f = ((x: Buffer, o: number) => x.readUInt32LE(o));
+      t8a = (x) => {
+        let vals = [0, 1, 2, 3].map(y => mod2y(BigInt(x), y))
+        return Uint8Array.from(vals)
+      }
+      r1f = ((x, o) => x.readUInt32LE(o));
+      w1t = ((x, o, v) => x.writeUInt32LE(Number(v), o));
       break;
     case 8:
       res = BigUint64Array;
-      t8a = ((x: bigint): Uint8Array => {
-        let vals = [0, 1, 2, 3, 4, 5, 6, 7].map(y => mod2y(x, y))
+      t8a = (x) => {
+        let vals = [0, 1, 2, 3, 4, 5, 6, 7].map(y => mod2y(BigInt(x), y))
         return Uint8Array.from(vals)
-      })
-      r1f = ((x: Buffer, o: number) => x.readBigUInt64LE(o));
-      res.bytesFromPointer = t8a
+      }
+      r1f = ((x, o) => x.readBigUInt64LE(o));
+      w1t = ((x, o, v) => x.writeBigUInt64LE(BigInt(v), o));
       break;
     default:
       throw new Error(`Unknown pointer size: ${this.ptrSize}`);
   }
   res.readOneFromBuffer = r1f;
+  res.writeOneToBuffer = w1t;
+  res.bytesFromPointer = t8a;
   return res;
 }

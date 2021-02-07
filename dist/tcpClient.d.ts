@@ -17,11 +17,12 @@ export interface TCPMVClientInterface extends MVClient {
 }
 export default class TCPMVClient extends MVClient {
     private _client;
+    private _lock;
     host: string;
     port: number;
     ptrSize?: number;
     _PAC?: PtrArrayTypes;
-    constructor($host: string, $port: number, $socketConstructor: typeof Socket);
+    constructor($host: string, $port: number, $socketFactory: () => Socket);
     _connect(): Promise<unknown>;
     _close(): void;
     getPtrSize(): Promise<number>;

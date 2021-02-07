@@ -2,6 +2,7 @@ import { PtrArray } from './ptrTypes';
 import MVClient from './client';
 import { MapState } from './mapstate';
 import MemRow from './memRow';
+import mutexify from 'mutexify/promise';
 ;
 class ReadPromise {
     constructor(requestSize) {
@@ -44,7 +45,7 @@ class StreamPromiseReader {
         while (TBC && TBC.requestSize <= this.leftoverBuffer.length) {
             // console.log(Object.assign({}, TBC, {socket: undefined}))
             // console.log(TBC.requestSize)
-            TBC.resolve(this.leftoverBuffer.slice(0, TBC.requestSize));
+            TBC.resolve(new Uint8Array(this.leftoverBuffer.slice(0, TBC.requestSize)));
             let reqSize = TBC.requestSize;
             this.waitingPromises.shift();
             TBC = this.waitingPromises[0];
@@ -67,13 +68,14 @@ class StreamPromiseReader {
     }
 }
 export default class TCPMVClient extends MVClient {
-    constructor($host, $port, $socketConstructor) {
+    constructor($host, $port, $socketFactory) {
         super();
         this.host = $host;
         this.port = $port;
-        this._client = new $socketConstructor();
+        this._client = $socketFactory();
         this.ptrSize = undefined;
         this._PAC = undefined;
+        this._lock = mutexify();
     }
     _connect() {
         return new Promise((res, rej) => {
@@ -89,6 +91,9 @@ export default class TCPMVClient extends MVClient {
         this._client.destroy();
     }
     getPtrSize() {
+        if (this.ptrSize) {
+            return new Promise((res, rej) => res(this.ptrSize));
+        }
         return new Promise((res, rej) => {
             this._client.on('error', rej);
             this._client.on('data', (data) => {
@@ -135,29 +140,35 @@ export default class TCPMVClient extends MVClient {
         return res;
     }
     async _internal_memread($startAddr, $endAddr) {
-        this._client.removeAllListeners();
-        const reader = new StreamPromiseReader(this._client);
-        const encoder = new TextEncoder();
-        const startAddrArray = this._PAC.bytesFromPointer($startAddr);
-        const endAddrArray = this._PAC.bytesFromPointer($endAddr);
-        const command = Buffer.concat([Buffer.from(encoder.encode('MEMR')), Buffer.from(startAddrArray), Buffer.from(endAddrArray)]);
+        const releaseLock = await this._lock();
         try {
-            this._client.write(command);
-            const pref = await reader.readNb(6);
-            if (pref.toString() == 'ERROR:') {
-                let errDescr = (await reader.readNb(16)).toString();
-                console.log('Error:', errDescr);
-                throw new Error(errDescr);
+            this._client.removeAllListeners();
+            const reader = new StreamPromiseReader(this._client);
+            const encoder = new TextEncoder();
+            const startAddrArray = this._PAC.bytesFromPointer($startAddr);
+            const endAddrArray = this._PAC.bytesFromPointer($endAddr);
+            const command = Buffer.concat([Buffer.from(encoder.encode('MEMR')), Buffer.from(startAddrArray), Buffer.from(endAddrArray)]);
+            try {
+                this._client.write(command);
+                const pref = await reader.readNb(6);
+                if (pref.toString() == 'ERROR:') {
+                    let errDescr = (await reader.readNb(16)).toString();
+                    console.log('Error:', errDescr);
+                    throw new Error(errDescr);
+                }
+                else {
+                    let resData = await reader.readNb(Number($endAddr - $startAddr));
+                    reader.detach();
+                    return new MemRow($startAddr, $endAddr, resData);
+                }
             }
-            else {
-                let resData = await reader.readNb(Number($endAddr - $startAddr));
-                reader.detach();
-                return new MemRow($startAddr, $endAddr, resData);
+            catch (err) {
+                console.log(err);
+                throw new Error('Could not read response preamble');
             }
         }
-        catch (err) {
-            console.log(err);
-            throw new Error('Could not read response preamble');
+        finally {
+            releaseLock();
         }
     }
     async startElectronServer($ipcMain) {
@@ -166,10 +177,18 @@ export default class TCPMVClient extends MVClient {
         }
         $ipcMain.on('get-maps', async (evt) => {
             const rawMaps = await this.getRawMaps();
-            evt.reply('maps', rawMaps);
+            // evt.reply('maps', rawMaps);
+            evt.sender.send('maps', rawMaps);
         });
         $ipcMain.on('get-ptrsize', (evt) => {
-            evt.reply('ptrsize', this.ptrSize);
+            // evt.reply('ptrsize', this.ptrSize);
+            evt.sender.send('ptrsize', this.ptrSize);
+        });
+        $ipcMain.on('get-mem', async (evt, arg) => {
+            const addrs = [...arg];
+            const resRow = await this.memr(addrs[0], addrs[1]);
+            // evt.reply('mem', resRow.data);
+            evt.sender.send('mem', resRow.data);
         });
     }
 }
