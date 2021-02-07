@@ -60,7 +60,6 @@ const mockHandleRequest = async ($this: Mocha.Context & { mitm?: ReturnType<type
             //     memCnt += ptrSize;
             // }
             Buffer.from(localMem.data).copy(memBuf, memCnt, 0, Number(endAddr - startAddr));
-            console.log('Res: ', memBuf);
             socket.write(memBuf);
             break;
         default:
@@ -105,20 +104,16 @@ describe('TCP Client', function () {
     })
 
     it('Should return proper memr() values', async function (this: Mocha.Context & { mitm?: ReturnType<typeof mitm>, client?: MockMVClient }) {
-        this.timeout(10000);
         const clientPtrSize = 4;
         this.client = new MockMVClient();
         const tcpClient = new TCPMVClient('localhost', 2160, MockSocketFactory);
         tcpClient._connect();
         await tcpClient.getPtrSize();
         const tcpMaps = await tcpClient.getMaps();
-        console.log(tcpMaps);
         const memReq = tcpMaps.maps.filter((x) => x.type == MapRow.USED)[0];
         const endAddr = nmin(memReq.start + BigInt(150), memReq.end);
         const readMem = await tcpClient.memr(memReq.start, endAddr);
-        console.log('Remote: ', readMem);
         const localMem = await this.client.memr(memReq.start, endAddr);
-        console.log(readMem, localMem);
         assert.deepStrictEqual(readMem, localMem);
     })
 })
