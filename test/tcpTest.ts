@@ -111,10 +111,12 @@ describe('TCP Client', function () {
         tcpClient._connect();
         await tcpClient.getPtrSize();
         const tcpMaps = await tcpClient.getMaps();
+        console.log(tcpMaps);
         const memReq = tcpMaps.maps.filter((x) => x.type == MapRow.USED)[0];
         const endAddr = nmin(memReq.start + BigInt(150), memReq.end);
         const readMem = await tcpClient.memr(memReq.start, endAddr);
         const localMem = await this.client.memr(memReq.start, endAddr);
+        console.log(readMem, localMem);
         assert.deepStrictEqual(readMem, localMem);
     })
 })
