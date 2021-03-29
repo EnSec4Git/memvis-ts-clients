@@ -5,7 +5,6 @@ import { connect, Socket } from 'net';
 import MockMVClient from '../src/mockClient';
 import { PtrArray, PtrArrayTypes } from '../src/ptrTypes';
 import { MapRow, MemRow } from '../src';
-import { start } from 'repl';
 
 // For an explanation of the above code, take a look at this
 // issue: https://github.com/moll/node-mitm/issues/42
@@ -68,7 +67,7 @@ const mockHandleRequest = async ($this: Mocha.Context & { mitm?: ReturnType<type
             //     PAC.writeOneToBuffer(memBuf, memCnt, localMem.data[Number(i - startAddr)])
             //     memCnt += ptrSize;
             // }
-            Buffer.from(localMem.data).copy(memBuf, memCnt, 0, Number(endAddr - startAddr));
+            Buffer.from(localMem.dataSlices[0]).copy(memBuf, memCnt, 0, Number(endAddr - startAddr));
             socket.write(memBuf);
             break;
         default:
@@ -142,7 +141,7 @@ describe('TCP Client', function () {
         const resps = preResps.map((x) => x[1]);
         const seqLocalResps: MemRow[] = [];
         for(let i=0; i<100; i++) {
-            seqLocalResps.push(await tcpClient.memr(memRow.start + BigInt(i) * HN, memRow.start + BigInt(i + 1) * HN))
+            seqLocalResps.push(await this.client.memr(memRow.start + BigInt(i) * HN, memRow.start + BigInt(i + 1) * HN))
         }
         assert.deepStrictEqual(resps, seqLocalResps);
     });

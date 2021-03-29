@@ -201,7 +201,7 @@ export default class TCPMVClient extends MVClient {
                 } else {
                     let resData = await reader.readNb(Number($endAddr - $startAddr));
                     reader.detach();
-                    return new MemRow($startAddr, $endAddr, resData);
+                    return new MemRow($startAddr, $endAddr, [resData]);
                 }
             } catch (err) {
                 console.log(err)
@@ -227,7 +227,7 @@ export default class TCPMVClient extends MVClient {
             const addrs: [bigint, bigint] = [...arg] as any;
             const resRow = await this.memr(addrs[0], addrs[1]);
             // evt.reply('mem', resRow.data);
-            evt.sender.send('mem', resRow.data);
+            evt.sender.send('mem', resRow.dataSlices);
         })
     }
 }

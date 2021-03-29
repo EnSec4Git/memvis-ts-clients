@@ -13,7 +13,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "mutexify": "^1.3.1"
+    "mutexify": "^1.3.1",
+    "safe-memory-cache": "^2.0.0"
   },
   "devDependencies": {
     "@types/mitm": "^1.3.3",

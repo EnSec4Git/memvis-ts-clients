@@ -29,12 +29,12 @@ export default class MockMVClient extends MVClient {
     async _internal_memread($startAddr: bigint, $endAddr: bigint): Promise<MemRow> {
         let res = new MemRow($startAddr, $endAddr);
         let len = Number($endAddr - $startAddr);
-        if (len > 8096) {
+        if (len > this.PAGE_SIZE) {
             throw new Error('It\'s a bad idea to request this big of a row');
         }
-        res.data = new Uint8Array(len);
+        res.dataSlices = [new Uint8Array(len)];
         for (let $i = $startAddr, $j = 0; $i < $endAddr; $i++, $j++) {
-            res.data[$j] = Number($i % 256n)
+            res.dataSlices[0][$j] = Number($i % 256n);
         }
         return res;
     }

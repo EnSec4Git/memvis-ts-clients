@@ -13,6 +13,7 @@ export default class ElectronMVClient extends MVClient {
     ptrSize?: number;
     constructor($ipcRenderer: IpcRenderer) {
         super();
+        this.PAGE_SIZE = 256n;
         this.renderer = $ipcRenderer;
         this._lock = mutexify();
     }
