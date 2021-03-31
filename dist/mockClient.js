@@ -14,12 +14,12 @@ export default class MockMVClient extends MVClient {
     async getMaps() {
         let res = new MapState(this.ptrSize);
         res.maps = [
-            new MapRow(MapRow.FREE, 0n, 256n, this.ptrSize),
-            new MapRow(MapRow.USED, 256n, 65536n, this.ptrSize),
+            new MapRow(MapRow.FREE, 0n, 4096n, this.ptrSize),
+            new MapRow(MapRow.USED, 4096n, 65536n, this.ptrSize),
             new MapRow(MapRow.FREE, 65536n, res.MAX_PTR, this.ptrSize)
         ];
         res.freeCount = 2;
-        res.usedLogSum = Math.log2(Math.max(1024, Number(65536n - 256n)));
+        res.usedLogSum = Math.log2(Math.max(1024, Number(65536n - 4096n)));
         res.freeMaxLog = Math.log2(Number(res.MAX_PTR - 65536n));
         this._notify_maps_listeners(res);
         return res;
@@ -27,12 +27,12 @@ export default class MockMVClient extends MVClient {
     async _internal_memread($startAddr, $endAddr) {
         let res = new MemRow($startAddr, $endAddr);
         let len = Number($endAddr - $startAddr);
-        if (len > 8096) {
+        if (len > this.PAGE_SIZE) {
             throw new Error('It\'s a bad idea to request this big of a row');
         }
-        res.data = new Uint8Array(len);
+        res.dataSlices = [new Uint8Array(len)];
         for (let $i = $startAddr, $j = 0; $i < $endAddr; $i++, $j++) {
-            res.data[$j] = Number($i % 256n);
+            res.dataSlices[0][$j] = Number($i % 256n);
         }
         return res;
     }

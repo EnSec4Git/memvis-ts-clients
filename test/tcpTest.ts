@@ -5,7 +5,7 @@ import { connect, Socket } from 'net';
 import MockMVClient from '../src/mockClient';
 import { PtrArray, PtrArrayTypes } from '../src/ptrTypes';
 import { MapRow, MemRow } from '../src';
-import { performRandomizedParallelRequests, readFirstXOfFirstMapFromTwoClients } from './commons';
+import { getFirstNonemptyMap, performRandomizedParallelRequests, performRequestsThatUpscaleToSamePageAndAssert, readFirstXOfFirstMapFromTwoClients } from './commons';
 
 // For an explanation of the above code, take a look at this
 // issue: https://github.com/moll/node-mitm/issues/42
@@ -102,6 +102,23 @@ describe('TCP Client', function () {
         assert.deepStrictEqual(localMaps, tcpMaps);
     })
 
+    it('Should have a sane memr() implementation', async function (this: Mocha.Context & { mitm?: ReturnType<typeof mitm>, client?: MockMVClient }) {
+        const clientPtrSize = 4;
+        this.client = new MockMVClient();
+        const tcpClient = new TCPMVClient('localhost', 2160, MockSocketFactory);
+        tcpClient._connect();
+        await tcpClient.getPtrSize();
+        const REQ_SIZE = 13;
+        const REQ_N_SIZE = BigInt(REQ_SIZE);
+        const maps = await this.client.getMaps();
+        const uMap = getFirstNonemptyMap(maps);
+        const testRes = await tcpClient.memr(uMap.start, uMap.start + REQ_N_SIZE);
+        const sampleRes = await this.client.memr(uMap.start, uMap.start + REQ_N_SIZE);
+        assert.strictEqual(testRes.dataSlices.length, 1);
+        assert.strictEqual(testRes.dataSlices[0].length, REQ_SIZE);
+        assert.deepStrictEqual(testRes, sampleRes);
+    })
+
     it('Should return proper memr() values', async function (this: Mocha.Context & { mitm?: ReturnType<typeof mitm>, client?: MockMVClient }) {
         const clientPtrSize = 4;
         this.client = new MockMVClient();
@@ -121,4 +138,16 @@ describe('TCP Client', function () {
         const results = await performRandomizedParallelRequests(100, tcpClient, this.client);
         assert.deepStrictEqual(results[0], results[1]);
     });
+
+    it('Should upscale requests to PAGE_SIZE before sending', async function (this: Mocha.Context & { mitm?: ReturnType<typeof mitm>, client?: MockMVClient }) {
+        const clientPtrSize = 4;
+        this.client = new MockMVClient();
+        const tcpClient = new TCPMVClient('localhost', 2160, MockSocketFactory);
+        tcpClient._connect();
+        await tcpClient.getPtrSize();
+        const res = await performRequestsThatUpscaleToSamePageAndAssert(20, tcpClient, this.client);
+        for(let i=1; i<res.length; i++) {
+            assert.deepStrictEqual(res[0], res[i]);
+        }
+    })
 })

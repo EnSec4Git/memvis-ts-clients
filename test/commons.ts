@@ -1,4 +1,6 @@
-import { MapRow, MemRow, MVClient } from "../src";
+import { MapRow, MapState, MemRow, MockMVClient, MVClient } from "../src";
+import sinon from 'sinon';
+import assert from 'assert';
 
 // Thanks, mate!
 // https://stackoverflow.com/a/12646864
@@ -10,11 +12,16 @@ function shuffleArray(array: any[]) {
 }
 
 const nmin = (x: bigint, y: bigint) => (x > y) ? y : x;
+const nmax = (x: bigint, y: bigint) => (x < y) ? y : x;
+
+export function getFirstNonemptyMap(mapState: MapState) {
+    return mapState.maps.filter((x) => x.type == MapRow.USED)[0];
+}
 
 export async function performRandomizedParallelRequests(numberOfRequests: number, first: MVClient, second: MVClient): Promise<[MemRow[], MemRow[]]> {
     const HN = BigInt(numberOfRequests);
     const tcpMaps = await first.getMaps();
-    const memRow = tcpMaps.maps.filter((x) => x.type == MapRow.USED)[0];
+    const memRow = getFirstNonemptyMap(tcpMaps);
     const reqCnt = Array.from(Array(numberOfRequests).keys());
     shuffleArray(reqCnt);
     const preResps = await Promise.all(reqCnt.map((x: number) => { return first.memr(memRow.start + BigInt(x) * HN, memRow.start + BigInt(x + 1) * HN).then((r): [number, MemRow] => [x, r]) }));
@@ -29,9 +36,38 @@ export async function performRandomizedParallelRequests(numberOfRequests: number
 
 export async function readFirstXOfFirstMapFromTwoClients(numberOfBytesToRequest: number, first: MVClient, second: MVClient): Promise<[MemRow, MemRow]> {
     const tcpMaps = await first.getMaps();
-    const memReq = tcpMaps.maps.filter((x) => x.type == MapRow.USED)[0];
+    const memReq = getFirstNonemptyMap(tcpMaps);
     const endAddr = nmin(memReq.start + BigInt(numberOfBytesToRequest), memReq.end);
     const readMem = await first.memr(memReq.start, endAddr);
     const localMem = await second.memr(memReq.start, endAddr);
     return [readMem, localMem];
+}
+
+export async function performRequestsThatUpscaleToSamePageAndAssert(numberOfRequests: number, testTarget: MVClient, spiedClient: MockMVClient): Promise<[$startAddr: bigint, $endAddr: bigint, $trackUsage?: boolean][]> {
+    if (numberOfRequests < 2) {
+        throw new Error('Teach me how to compare 1 object...');
+    }
+    const spyObj = sinon.spy(spiedClient, 'memr');
+    const PS = testTarget.PAGE_SIZE;
+    const maps = await testTarget.getMaps();
+    const MIN_SLICE_SIZE = 10;
+    const memRow = getFirstNonemptyMap(maps);
+    const MAX_SLICE_NR = Math.floor(Number((memRow.end - memRow.start) / BigInt(MIN_SLICE_SIZE)));
+    if ((memRow.end - memRow.start) % PS != BigInt(0)) {
+        throw new Error('MapRow does not consist of an integer number of memory pages');
+        // TODO: Maybe implement a unit test for that?
+    }
+    const SLICE_SIZE = Math.max(MIN_SLICE_SIZE, Number((memRow.end - memRow.start) / BigInt(numberOfRequests)))
+    const FIRST_RQ = await testTarget.memr(memRow.start, memRow.start + BigInt(SLICE_SIZE), false);
+    const FIRST_CALL = spyObj.getCall(0).args;
+    let res = [FIRST_CALL];
+    for(let i=0; i<numberOfRequests; i++) {
+        let e1 = memRow.start + BigInt(i * SLICE_SIZE),
+            e2 = memRow.start + BigInt((i+1) * SLICE_SIZE);
+        let start = nmax(e1, e2), end = nmin(e1, e2);
+        const resRow = await testTarget.memr(start, end);
+        const lastCall = spyObj.getCall(spyObj.callCount - 1).args;
+        res.push(lastCall);
+    }
+    return res;
 }

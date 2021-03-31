@@ -182,7 +182,7 @@ export default class TCPMVClient extends MVClient {
         return res;
     }
 
-    async _internal_memread($startAddr: bigint, $endAddr: bigint): Promise<MemRow> {
+    protected async _internal_memread($startAddr: bigint, $endAddr: bigint): Promise<MemRow> {
         const releaseLock = await this._lock();
         try {
             this._client.removeAllListeners();

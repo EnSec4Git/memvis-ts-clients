@@ -90,28 +90,32 @@ export default class TCPMVClient extends MVClient {
     _close() {
         this._client.destroy();
     }
-    getPtrSize() {
+    async getPtrSize() {
         if (this.ptrSize) {
             return new Promise((res, rej) => res(this.ptrSize));
         }
+        const releaseLock = await this._lock();
         return new Promise((res, rej) => {
-            this._client.on('error', rej);
+            this._client.on('error', (x) => { releaseLock(); rej(x); });
             this._client.on('data', (data) => {
                 const _szs = Uint8Array.from(data);
                 if (_szs.length !== 1) {
+                    releaseLock();
                     rej(new Error('Expected a single byte as answer to pointer size query!'));
                 }
                 [this.ptrSize] = _szs;
                 this._PAC = PtrArray(this.ptrSize);
+                releaseLock();
                 res(this.ptrSize);
             });
             this._client.write('PTRS');
         });
     }
-    getRawMaps() {
+    async getRawMaps() {
+        const releaseLock = await this._lock();
         return new Promise((res, rej) => {
             this._client.removeAllListeners();
-            this._client.on('error', rej);
+            this._client.on('error', (x) => { releaseLock(); rej(x); });
             this._client.on('data', (data) => {
                 const resp = data.slice(0, 6);
                 if (resp.toString() === 'RESULT') {
@@ -123,11 +127,14 @@ export default class TCPMVClient extends MVClient {
                         const elemJ = this._PAC.readOneFromBuffer(data, 6 + (i + 1) * this.ptrSize);
                         result.push([elemI, elemJ]);
                     }
+                    releaseLock();
                     return res(result);
                 }
                 if (resp.toString() === 'ERROR:') {
+                    releaseLock();
                     return rej(new Error(data.slice(6).toString()));
                 }
+                releaseLock();
                 return rej(new Error('Unknown server response!'));
             });
             this._client.write('MAPS');
@@ -159,7 +166,7 @@ export default class TCPMVClient extends MVClient {
                 else {
                     let resData = await reader.readNb(Number($endAddr - $startAddr));
                     reader.detach();
-                    return new MemRow($startAddr, $endAddr, resData);
+                    return new MemRow($startAddr, $endAddr, [resData]);
                 }
             }
             catch (err) {
@@ -188,7 +195,7 @@ export default class TCPMVClient extends MVClient {
             const addrs = [...arg];
             const resRow = await this.memr(addrs[0], addrs[1]);
             // evt.reply('mem', resRow.data);
-            evt.sender.send('mem', resRow.data);
+            evt.sender.send('mem', resRow.dataSlices);
         });
     }
 }

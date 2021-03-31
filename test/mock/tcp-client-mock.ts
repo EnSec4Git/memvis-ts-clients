@@ -3,11 +3,11 @@ import { PtrArray } from "../../src/ptrTypes";
 
 // class FakeSocket {}
 
-export class MockTCPMVClient extends TCPMVClient {
-    private mockClient: MockMVClient
+export class MockTCPMVClient extends TCPMVClient implements MockMVClient {
+    private mockClient: MockMVClient;
     constructor() {
-        super('localhost', 2160, () => {return {} as any})
-        this.mockClient = new MockMVClient()
+        super('localhost', 2160, () => {return {} as any});
+        this.mockClient = new MockMVClient();
     }
 
     async getPtrSize() {
@@ -22,9 +22,10 @@ export class MockTCPMVClient extends TCPMVClient {
     }
 
     async getRawMaps(): Promise<RawMaps> {
+        // @TODO: Fix this - parse MockMVClient getMaps() instead
         return [
-            [256 as any, 65536 as any]
-        ]
+            [4096 as any, 65536 as any]
+        ];
     }
 
     _internal_memread($startAddr: bigint, $endAddr: bigint) {

@@ -28,6 +28,6 @@ export default class TCPMVClient extends MVClient {
     getPtrSize(): Promise<number>;
     getRawMaps(): Promise<RawMaps>;
     getMaps(): Promise<MapState>;
-    _internal_memread($startAddr: bigint, $endAddr: bigint): Promise<MemRow>;
+    protected _internal_memread($startAddr: bigint, $endAddr: bigint): Promise<MemRow>;
     startElectronServer($ipcMain: IpcMain): Promise<void>;
 }

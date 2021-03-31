@@ -3,11 +3,11 @@ export default class MemRow {
         this.startAddr = $startAddr;
         this.endAddr = $endAddr;
         if ($data)
-            this.data = $data;
+            this.dataSlices = $data;
     }
     fromOther($otherRow) {
         this.startAddr = $otherRow.startAddr;
         this.endAddr = $otherRow.endAddr;
-        this.data = $otherRow.data;
+        this.dataSlices = $otherRow.dataSlices;
     }
 }

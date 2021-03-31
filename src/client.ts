@@ -45,7 +45,7 @@ export default abstract class MVClient {
     roundToPageNumbers($startAddr: bigint, $endAddr: bigint): bigint[] {
         let limits = [$startAddr / this.PAGE_SIZE, ($endAddr + this.PAGE_SIZE - 1n) / this.PAGE_SIZE];
         let res: bigint[] = [];
-        for (let i = limits[0] / this.PAGE_SIZE; i < limits[1] / this.PAGE_SIZE; i++) {
+        for (let i = limits[0]; i < limits[1]; i++) {
             res.push(i);
         }
         return res;
@@ -55,7 +55,7 @@ export default abstract class MVClient {
         // First, reduce the requested memory interval to a list of memory pages
         const pageNrs = this.roundToPageNumbers($startAddr, $endAddr);
         const pageCount = pageNrs.length;
-        let pages = [];
+        let pages: MemRow[] = [];
         // For each page
         for (let page of pageNrs) {
             let pst = page.toString();
@@ -73,9 +73,16 @@ export default abstract class MVClient {
             // And add the memory page to a result list
             pages.push(resPage);
         }
+        let resSlices = [];
+        for(let i = 0; i < pageNrs.length; i++) {
+            let startInd = (i == 0) ? Number($startAddr % this.PAGE_SIZE) : 0;
+            let endInd = (i == pageNrs.length - 1)
+                ? (1 + Number(($endAddr + this.PAGE_SIZE - BigInt(1)) % this.PAGE_SIZE))
+                : (Number(this.PAGE_SIZE));
+            resSlices.push(pages[i].dataSlices[0].slice(startInd, endInd));
+        }
         let res: MemRow = new MemRow(
-            $startAddr, $endAddr,
-            pages.map((x: MemRow) => x.dataSlices).flat()
+            $startAddr, $endAddr, resSlices
         );
         if ($trackUsage) {
             this._memrefs.addRef(res);

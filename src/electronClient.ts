@@ -45,7 +45,7 @@ export default class ElectronMVClient extends MVClient {
         });
     }
 
-    async _internal_memread($startAddr: bigint, $endAddr: bigint): Promise<MemRow> {
+    protected async _internal_memread($startAddr: bigint, $endAddr: bigint): Promise<MemRow> {
         const releaseLock = await this._lock();
         return new Promise((res, _) => {
             this.renderer.once("mem", (_, row) => {

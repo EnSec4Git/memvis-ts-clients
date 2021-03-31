@@ -16,12 +16,12 @@ export default class MockMVClient extends MVClient {
     async getMaps() {
         let res = new MapState(this.ptrSize);
         res.maps = [
-            new MapRow(MapRow.FREE, 0n, 256n, this.ptrSize),
-            new MapRow(MapRow.USED, 256n, 65536n, this.ptrSize),
+            new MapRow(MapRow.FREE, 0n, 4096n, this.ptrSize),
+            new MapRow(MapRow.USED, 4096n, 65536n, this.ptrSize),
             new MapRow(MapRow.FREE, 65536n, res.MAX_PTR, this.ptrSize)
         ];
         res.freeCount = 2;
-        res.usedLogSum = Math.log2(Math.max(1024, Number(65536n - 256n)));
+        res.usedLogSum = Math.log2(Math.max(1024, Number(65536n - 4096n)));
         res.freeMaxLog = Math.log2(Number(res.MAX_PTR - 65536n));
         this._notify_maps_listeners(res);
         return res;
