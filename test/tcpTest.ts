@@ -1,11 +1,12 @@
-import assert from 'assert';
+import { assert } from 'chai';
 import TCPMVClient from '../src/tcpClient';
 import mitm from 'mitm';
 import { connect, Socket } from 'net';
 import MockMVClient from '../src/mockClient';
 import { PtrArray, PtrArrayTypes } from '../src/ptrTypes';
 import { MapRow, MemRow } from '../src';
-import { getFirstNonemptyMap, performRandomizedParallelRequests, performRequestsThatUpscaleToSamePageAndAssert, readFirstXOfFirstMapFromTwoClients } from './commons';
+import { getFirstNonemptyMap, nmin, performRandomizedParallelRequests, performRequestsThatUpscaleToSamePageAndAssert, readFirstXOfFirstMapFromTwoClients } from './commons';
+import { performance } from 'perf_hooks';
 
 // For an explanation of the above code, take a look at this
 // issue: https://github.com/moll/node-mitm/issues/42
@@ -149,5 +150,31 @@ describe('TCP Client', function () {
         for(let i=1; i<res.length; i++) {
             assert.deepStrictEqual(res[0], res[i]);
         }
-    })
+    });
+
+    it('Should cache requests responses for faster execution', async function (this: Mocha.Context & { mitm?: ReturnType<typeof mitm>, client?: MockMVClient }) {
+        const REQUEST_COUNT = 100;
+        const MULTI_LIMIT = 10;
+        const clientPtrSize = 4;
+        this.client = new MockMVClient();
+        const tcpClient = new TCPMVClient('localhost', 2160, MockSocketFactory);
+        tcpClient._connect();
+        await tcpClient.getPtrSize();
+        const maps = await tcpClient.getMaps();
+        const memRow = getFirstNonemptyMap(maps);
+        const reqEnd = nmin(memRow.end, memRow.start + tcpClient.PAGE_SIZE);
+        const t0 = performance.now();
+        let res0 = await tcpClient.memr(memRow.start, reqEnd);
+        const d0 = performance.now() - t0;
+        let dsum = 0;
+        for(let i=0; i < REQUEST_COUNT; i++) {
+            const ti = performance.now();
+            const resi = await tcpClient.memr(memRow.start, reqEnd);
+            const di = performance.now() - ti;
+            assert.deepStrictEqual(res0, resi);
+            dsum += di;
+        }
+        assert.isBelow(dsum, MULTI_LIMIT * d0);
+    });
 })
+

@@ -7,6 +7,11 @@ interface PageCache {
     get(key: string): MemRow | null;
 }
 
+// function clog(...args: any[]) {
+//     const res = args.map((x: any) => util.inspect(x)).join(" ");
+//     console.log(res);
+// }
+
 const Cache: (opts: { limit: number, buckets?: number }) => PageCache = 
     require('safe-memory-cache').safeMemoryCache as any;
 

@@ -11,8 +11,8 @@ function shuffleArray(array: any[]) {
     }
 }
 
-const nmin = (x: bigint, y: bigint) => (x > y) ? y : x;
-const nmax = (x: bigint, y: bigint) => (x < y) ? y : x;
+export const nmin = (x: bigint, y: bigint) => (x > y) ? y : x;
+export const nmax = (x: bigint, y: bigint) => (x < y) ? y : x;
 
 export function getFirstNonemptyMap(mapState: MapState) {
     return mapState.maps.filter((x) => x.type == MapRow.USED)[0];
@@ -61,7 +61,7 @@ export async function performRequestsThatUpscaleToSamePageAndAssert(numberOfRequ
     const FIRST_RQ = await testTarget.memr(memRow.start, memRow.start + BigInt(SLICE_SIZE), false);
     const FIRST_CALL = spyObj.getCall(0).args;
     let res = [FIRST_CALL];
-    for(let i=0; i<numberOfRequests; i++) {
+    for(let i=0, j=0; i<numberOfRequests; i++, j = (j+1) % (MAX_SLICE_NR - 1)) {
         let e1 = memRow.start + BigInt(i * SLICE_SIZE),
             e2 = memRow.start + BigInt((i+1) * SLICE_SIZE);
         let start = nmax(e1, e2), end = nmin(e1, e2);
