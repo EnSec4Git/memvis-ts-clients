@@ -1,5 +1,9 @@
 import MemRow from './memRow';
 import { IterableWeakSet } from './iterableWeakSet';
+// function clog(...args: any[]) {
+//     const res = args.map((x: any) => util.inspect(x)).join(" ");
+//     console.log(res);
+// }
 const Cache = require('safe-memory-cache').safeMemoryCache;
 const MAX_CACHED_PAGES = 5;
 export default class MVClient {
