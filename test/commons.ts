@@ -1,6 +1,6 @@
 import { MapRow, MapState, MemRow, MockMVClient, MVClient } from "../src";
 import sinon from 'sinon';
-import assert from 'assert';
+import { assert } from 'chai';
 import { performance } from 'perf_hooks';
 
 // Thanks, mate!
@@ -93,4 +93,37 @@ export async function performAndTimeSameSinglePageRequests(numberOfRequests: num
         dsum += di;
     }
     return [results, dsum, MULTI_LIMIT * d0];
+}
+
+export async function performAndTimeAdjacentPageRequests(numberOfTests: number, testTarget: MVClient, referenceClient: MockMVClient): Promise<[MemRow[][], number, number]> {
+    const EMT_FACTOR = 0.2;
+    const maps = await testTarget.getMaps();
+    const memRow = getFirstNonemptyMap(maps);
+    assert.isBelow(Number(BigInt(3) * testTarget.PAGE_SIZE - (memRow.end - memRow.start)), 0);
+    const reqEnd = nmin(memRow.end, memRow.start + testTarget.PAGE_SIZE);
+    const res0: MemRow[] = [];
+    const resRef: MemRow[] = [];
+    const t0 = performance.now();
+    for(let j=0; j<3; j++) {
+        const st = memRow.start + BigInt(j) * testTarget.PAGE_SIZE;
+        const en = reqEnd + BigInt(j) * testTarget.PAGE_SIZE;
+        res0.push(await testTarget.memr(st, en));
+        resRef.push(await referenceClient.memr(st, en));
+    }
+    let dsum = 0;
+    const d0 = performance.now() - t0;
+    const ress = [resRef, res0];
+    for(let i=0; i < numberOfTests; i++) {
+        const ti = performance.now();
+        const resi = [];
+        for(let j=0; j<3; j++) {
+            const st = memRow.start + BigInt(j) * testTarget.PAGE_SIZE;
+            const en = reqEnd + BigInt(j) * testTarget.PAGE_SIZE;
+            resi.push(await testTarget.memr(st, en));
+        }
+        const di = performance.now() - ti;
+        dsum += di;
+        ress.push(resi);
+    }
+    return [ress, dsum, numberOfTests * d0 * EMT_FACTOR];
 }

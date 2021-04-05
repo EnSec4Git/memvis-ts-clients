@@ -5,7 +5,7 @@ import { connect, Socket } from 'net';
 import MockMVClient from '../src/mockClient';
 import { PtrArray, PtrArrayTypes } from '../src/ptrTypes';
 import { MapRow, MemRow } from '../src';
-import { getFirstNonemptyMap, nmin, performAndTimeSameSinglePageRequests, performRandomizedParallelRequests, performRequestsThatUpscaleToSamePageAndAssert, readFirstXOfFirstMapFromTwoClients } from './commons';
+import { getFirstNonemptyMap, nmin, performAndTimeAdjacentPageRequests, performAndTimeSameSinglePageRequests, performRandomizedParallelRequests, performRequestsThatUpscaleToSamePageAndAssert, readFirstXOfFirstMapFromTwoClients } from './commons';
 
 // For an explanation of the above code, take a look at this
 // issue: https://github.com/moll/node-mitm/issues/42
@@ -146,7 +146,7 @@ describe('TCP Client', function () {
         tcpClient._connect();
         await tcpClient.getPtrSize();
         const res = await performRequestsThatUpscaleToSamePageAndAssert(20, tcpClient, this.client);
-        for(let i=1; i<res.length; i++) {
+        for (let i = 1; i < res.length; i++) {
             assert.deepStrictEqual(res[0], res[i]);
         }
     });
@@ -159,9 +159,23 @@ describe('TCP Client', function () {
         tcpClient._connect();
         await tcpClient.getPtrSize();
         const [results, actualTime, expectedMaxTime] = await performAndTimeSameSinglePageRequests(REQUEST_COUNT, tcpClient, this.client);
-        for(let i=1; i<results.length; i++) {
+        for (let i = 1; i < results.length; i++) {
             assert.deepStrictEqual(results[0], results[i]);
         }
         assert.isBelow(actualTime, expectedMaxTime);
     });
+
+    it('Should have cache size of at least three', async function (this: Mocha.Context & { mitm?: ReturnType<typeof mitm>, client?: MockMVClient }) {
+        const SUBTEST_COUNT = 20;
+        const clientPtrSize = 4;
+        this.client = new MockMVClient();
+        const tcpClient = new TCPMVClient('localhost', 2160, MockSocketFactory);
+        tcpClient._connect();
+        await tcpClient.getPtrSize();
+        const [results, actualTime, expectedMaxTime] = await performAndTimeAdjacentPageRequests(SUBTEST_COUNT, tcpClient, this.client);
+        for(let i=1; i < results.length; i++) {
+            assert.deepStrictEqual(results[0], results[i]);
+        }
+        assert.isBelow(actualTime, expectedMaxTime);
+    })
 })
