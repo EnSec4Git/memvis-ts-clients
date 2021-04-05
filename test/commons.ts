@@ -1,6 +1,7 @@
 import { MapRow, MapState, MemRow, MockMVClient, MVClient } from "../src";
 import sinon from 'sinon';
 import assert from 'assert';
+import { performance } from 'perf_hooks';
 
 // Thanks, mate!
 // https://stackoverflow.com/a/12646864
@@ -61,13 +62,35 @@ export async function performRequestsThatUpscaleToSamePageAndAssert(numberOfRequ
     const FIRST_RQ = await testTarget.memr(memRow.start, memRow.start + BigInt(SLICE_SIZE), false);
     const FIRST_CALL = spyObj.getCall(0).args;
     let res = [FIRST_CALL];
-    for(let i=0, j=0; i<numberOfRequests; i++, j = (j+1) % (MAX_SLICE_NR - 1)) {
+    for (let i = 0, j = 0; i < numberOfRequests; i++, j = (j + 1) % (MAX_SLICE_NR - 1)) {
         let e1 = memRow.start + BigInt(i * SLICE_SIZE),
-            e2 = memRow.start + BigInt((i+1) * SLICE_SIZE);
+            e2 = memRow.start + BigInt((i + 1) * SLICE_SIZE);
         let start = nmax(e1, e2), end = nmin(e1, e2);
         const resRow = await testTarget.memr(start, end);
         const lastCall = spyObj.getCall(spyObj.callCount - 1).args;
         res.push(lastCall);
     }
     return res;
+}
+
+export async function performAndTimeSameSinglePageRequests(numberOfRequests: number, testTarget: MVClient, referenceClient: MockMVClient): Promise<[MemRow[], number, number]> {
+    const MULTI_LIMIT = 10;
+    const maps = await testTarget.getMaps();
+    const memRow = getFirstNonemptyMap(maps);
+    const reqEnd = nmin(memRow.end, memRow.start + testTarget.PAGE_SIZE);
+    const t0 = performance.now();
+    const res0 = await testTarget.memr(memRow.start, reqEnd);
+    const resRef = await referenceClient.memr(memRow.start, reqEnd);
+    let results = [resRef, res0];
+    const d0 = performance.now() - t0;
+    let dsum = 0;
+    for (let i = 0; i < numberOfRequests; i++) {
+        const ti = performance.now();
+        const resi = await testTarget.memr(memRow.start, reqEnd);
+        const di = performance.now() - ti;
+        // assert.deepStrictEqual(res0, resi);
+        results.push(resi);
+        dsum += di;
+    }
+    return [results, dsum, MULTI_LIMIT * d0];
 }
