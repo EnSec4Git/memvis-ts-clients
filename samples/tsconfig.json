@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        // "module": "ES6",
+        "module": "esnext",
+        "target": "esnext",
+        "noEmitOnError": true,
+        // "declaration": true,
+        "esModuleInterop": true,
+        "outDir": "./dist",
+        "moduleResolution": "node",
+        "baseUrl": "."
+    },
+    "include": [
+        "*.ts"
+    ],
+    "exclude": [
+        "node_modules/**/*.ts"
+    ]
+}

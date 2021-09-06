@@ -1,3 +1,6 @@
+# Samples compiled JS
+samples/dist
+
 # Logs
 logs
 *.log
