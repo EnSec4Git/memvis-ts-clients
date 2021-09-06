@@ -96,7 +96,7 @@ export default class TCPMVClient extends MVClient {
     private _lock: ReturnType<typeof mutexify>;
     host: string;
     port: number;
-    ptrSize?: number;
+    declare ptrSize?: number;
     _PAC?: PtrArrayTypes;
 
     constructor($host: string, $port: number, $socketFactory: () => Socket) {

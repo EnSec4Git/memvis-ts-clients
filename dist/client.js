@@ -4,7 +4,8 @@ import { IterableWeakSet } from './iterableWeakSet';
 //     const res = args.map((x: any) => util.inspect(x)).join(" ");
 //     console.log(res);
 // }
-const Cache = require('safe-memory-cache').safeMemoryCache;
+import cacheMod from 'safe-memory-cache';
+const Cache = cacheMod.safeMemoryCache;
 const MAX_CACHED_PAGES = 5;
 export default class MVClient {
     constructor() {

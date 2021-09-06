@@ -12,8 +12,8 @@ interface PageCache {
 //     console.log(res);
 // }
 
-const Cache: (opts: { limit: number, buckets?: number }) => PageCache = 
-    require('safe-memory-cache').safeMemoryCache as any;
+import cacheMod from 'safe-memory-cache';
+const Cache: (opts: { limit: number, buckets?: number }) => PageCache = cacheMod.safeMemoryCache;
 
 const MAX_CACHED_PAGES = 5;
 
